@@ -1,24 +1,29 @@
+import json
 import boto3
+from botocore.exceptions import ClientError
 
 def lambda_handler(event, context):
-    s3 = boto3.client('s3')
-    
-    # Verificar si 'bucket_name' está en event
-    if 'bucket_name' not in event:
-        return {
-            'statusCode': 400,
-            'body': 'Error: El campo bucket_name es obligatorio.'
-        }
+    # Initialize the S3 client
+    s3_client = boto3.client('s3')
 
-    bucket_name = event['bucket_name']
-    
-    response = s3.create_bucket(
-        Bucket=bucket_name,
-        ACL='public-read'
-    )
-    
-    return {
-        'statusCode': 200,
-        'body': f'Bucket {bucket_name} creado con exito :D',
-        'Location': response['Location']
-    }
+    # Bucket name (unique across all AWS accounts)
+    bucket_name = 'eaa-new-bucket-4'  # Change to your desired bucket name
+
+    # Define the AWS region
+    region = 'us-east-2'  # Change to your desired region
+
+    try:
+        # Create the S3 bucket
+        response = s3_client.create_bucket(
+            Bucket=bucket_name
+        )
+        return {
+            'statusCode': 200,
+            'body': json.dumps(f'Bucket creado con éxito: {bucket_name}')
+        }
+        
+    except ClientError as e:
+        return {
+            'statusCode': 501,
+            'body': json.dumps(f'Error: {e}')
+        }
