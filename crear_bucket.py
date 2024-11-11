@@ -6,24 +6,25 @@ def lambda_handler(event, context):
     # Initialize the S3 client
     s3_client = boto3.client('s3')
 
-    # Bucket name (unique across all AWS accounts)
-    bucket_name = 'eaa-new-bucket-4'  # Change to your desired bucket name
-
-    # Define the AWS region
-    region = 'us-east-2'  # Change to your desired region
+    # Retrieve bucket name and region from the event
+    bucket_name = event.get('bucket_name', 'default-bucket-name')
+    region = event.get('region', 'us-east-1')  # Default to 'us-east-1' if not provided
 
     try:
         # Create the S3 bucket
         response = s3_client.create_bucket(
-            Bucket=bucket_name
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': region
+            }
         )
         return {
             'statusCode': 200,
-            'body': json.dumps(f'Bucket creado con éxito: {bucket_name}')
+            'body': json.dumps(f'Successfully created bucket: {bucket_name}')
         }
         
     except ClientError as e:
         return {
             'statusCode': 501,
-            'body': json.dumps(f'Error: {e}')
+            'body': json.dumps(f'Error: {str(e)}')
         }
