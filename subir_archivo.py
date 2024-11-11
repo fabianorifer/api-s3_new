@@ -2,15 +2,22 @@ import boto3
 import base64
 
 def lambda_handler(event, context):
+    # Entrada (json)
+    nombre_bucket = event['body']['bucket']
+    base_64_file = event['body']['base_64_file']
+    file_name = event['body']['file_name']
+    directory = event['body']['directory']
+
+    # Proceso
     s3 = boto3.client('s3')
-    bucket_name = event['bucket_name']
-    directory_name = event['directory_name']
-    file_name = event['file_name']
-    file_content = base64.b64decode(event['file_content'])
-    
-    s3.put_object(Bucket=bucket_name, Key=f'{directory_name}/{file_name}', Body=file_content)
-    
+    response = s3.put_object(
+        Bucket=nombre_bucket,
+        Body=base64.b64decode(base_64_file),
+        Key=directory + '/' + file_name
+    )
+
     return {
         'statusCode': 200,
-        'body': f'Archivo {file_name} subido a {bucket_name}/{directory_name}'
+        'bucket': nombre_bucket,
+        'response': response
     }
